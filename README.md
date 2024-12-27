@@ -1,4 +1,4 @@
-# Swagger JSON Merger
+# JSON Merger
 
 This tool merges two Swagger/OpenAPI specification JSON files, typically representing an "original" and a "Updated" version of a specification. The primary goal is to facilitate an update process where changes (modifications, additions) from the Updated specification are incorporated into the original specification while preserving the original structure, IDs, and certain properties as much as possible.
 
