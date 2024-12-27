@@ -3,17 +3,18 @@ import path from 'path';
 
 /**
  * Merges modified Swagger JSON content into original JSON while preserving extra content
- * @param {Object} original - Original JSON object
- * @param {Object} modified - Modified JSON object
- * @returns {Object} - Merged JSON object
+ * @param {object} original - Original JSON object
+ * @param {object} modified - Modified JSON object
+ * @returns {object} - Merged JSON object
  */
 
-function mergeSwaggerJSON(original, modified) {
+function mergeSwaggerJSON(original: any, modified: any): any {
     // Helper function to find an item by ID in an array
-    const findById = (array, name) => array.find(item => item.name === name);
+    const findById = (array: any[], name: string): any | undefined => array.find(item => item.name === name);
 
-    const deepMerge = (orig, mod) => {
-        const result = { ...orig };
+    // Deep merge function for non-array objects
+    const deepMerge = (orig: any, mod: any): any => {
+        const result: any = { ...orig };
 
         for (const key in mod) {
             if (Array.isArray(mod[key])) {
@@ -36,8 +37,8 @@ function mergeSwaggerJSON(original, modified) {
     };
 
     // Merge containers (folders or requests) while preserving IDs and extra content
-    const mergeContainers = (origContainers, modContainers) => {
-        const result = [...origContainers];
+    const mergeContainers = (origContainers: any[], modContainers: any[]): any[] => {
+        const result: any[] = [...origContainers];
 
         modContainers.forEach(modItem => {
             const existingItem = findById(result, modItem.name);
@@ -58,12 +59,12 @@ function mergeSwaggerJSON(original, modified) {
     };
 
     // Concatenate arrays by adding unique items based on a combination of properties
-    const concatenateUniqueItems = (origItems, modItems) => {
-        const result = [...origItems]; // Start with a copy of original items
+    const concatenateUniqueItems = (origItems: any[], modItems: any[]): any[] => {
+        const result: any[] = [...origItems]; // Start with a copy of original items
 
         modItems.forEach(modItem => {
             // Check if the modItem is unique compared to the current result array
-            const isUnique = !result.some(existingItem => areItemsEqual(modItem, existingItem));
+            const isUnique: boolean = !result.some(existingItem => areItemsEqual(modItem, existingItem));
 
             if (isUnique) {
                 result.push(modItem); // Add to the result if it's unique
@@ -74,7 +75,7 @@ function mergeSwaggerJSON(original, modified) {
     };
 
     // Helper function to compare items for equality based on relevant properties
-    const areItemsEqual = (item1, item2) => {
+    const areItemsEqual = (item1: any, item2: any): boolean => {
         if (item1.name && item2.name && item1.name === item2.name) {
             // For params, also check isPath
             return item1.isPath === undefined || item1.isPath === item2.isPath;
@@ -85,13 +86,13 @@ function mergeSwaggerJSON(original, modified) {
     };
 
     // Start the merge process
-    const merged = deepMerge(original, modified);
+    const merged: any = deepMerge(original, modified);
 
     // Ensure important root properties are preserved
     merged._id = original._id;
     merged.colId = original.colId;
     merged.containerId = original.containerId;
-    merged.colName = original.colName; 
+    merged.colName = original.colName;
     merged.created = original.created;
 
     // Merge settings
@@ -108,22 +109,21 @@ function mergeSwaggerJSON(original, modified) {
  * @param {string} modifiedPath - Path to modified JSON file
  * @param {string} outputPath - Path where merged JSON will be written
  */
-
-async function mergeSwaggerFiles(originalPath, modifiedPath, outputPath) {
+async function mergeSwaggerFiles(originalPath: string, modifiedPath: string, outputPath: string): Promise<void> {
     try {
         // Read both JSON files
-        const originalContent = await fs.readFile(originalPath, 'utf8');
-        const modifiedContent = await fs.readFile(modifiedPath, 'utf8');
+        const originalContent: string = await fs.readFile(originalPath, 'utf8');
+        const modifiedContent: string = await fs.readFile(modifiedPath, 'utf8');
 
         // Parse JSON content
-        const original = JSON.parse(originalContent);
-        const modified = JSON.parse(modifiedContent);
+        const original: any = JSON.parse(originalContent);
+        const modified: any = JSON.parse(modifiedContent);
 
         // Merge the JSONs
-        const merged = mergeSwaggerJSON(original, modified);
+        const merged: any = mergeSwaggerJSON(original, modified);
 
         // Create output directory if it doesn't exist
-        const outputDir = path.dirname(outputPath);
+        const outputDir: string = path.dirname(outputPath);
         await fs.mkdir(outputDir, { recursive: true });
 
         // Write merged content to new file with pretty formatting
@@ -138,9 +138,10 @@ async function mergeSwaggerFiles(originalPath, modifiedPath, outputPath) {
     }
 }
 
-const originalPath = 'Original-petstore.json';
-const modifiedPath = 'Updated-petstore.json';
-const outputPath = 'Merged-petstore.json';
+// Example usage (make sure the files exist in the correct paths)
+const originalPath: string = 'Json/Original-petstore.json';
+const modifiedPath: string = 'Json/Updated-petstore.json';
+const outputPath: string = 'Json/Merged-petstore.json';
 
 mergeSwaggerFiles(originalPath, modifiedPath, outputPath)
     .catch(error => {
