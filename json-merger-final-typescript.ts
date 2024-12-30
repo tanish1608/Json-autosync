@@ -15,24 +15,28 @@ function mergeSwaggerJSON(original: any, modified: any): any {
     // Deep merge function for non-array objects
     const deepMerge = (orig: any, mod: any): any => {
         const result: any = { ...orig };
-
+    
+        // Check if this is a request object (has url or body)
+        const isRequest = 'url' in mod || 'body' in mod || 'modified' in mod;
+        
         for (const key in mod) {
-            if (Array.isArray(mod[key])) {
-                // Handle arrays (folders, requests, params, headers, etc.) specially
+            if (isRequest && (key === 'url' || key === 'body' || key === 'modified')) {
+                // Always use modified url and body for requests
+                result[key] = mod[key];
+            }
+            else if (Array.isArray(mod[key])) {
                 if (key === 'folders' || key === 'requests') {
                     result[key] = mergeContainers(orig[key] || [], mod[key]);
                 } else {
-                    // Concatenate other arrays (e.g., params, headers, body)
                     result[key] = concatenateUniqueItems(orig[key] || [], mod[key]);
                 }
             } else if (typeof mod[key] === 'object' && mod[key] !== null) {
                 result[key] = deepMerge(orig[key] || {}, mod[key]);
             } else {
-                // Handle conflicts (here: prefer original)
                 result[key] = orig[key] !== undefined ? orig[key] : mod[key];
             }
         }
-
+    
         return result;
     };
 
