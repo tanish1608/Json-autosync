@@ -41,6 +41,15 @@ function mergeSwaggerJSON(original: any, modified: any): any {
     
         return result;
     };
+    // Add these helper functions
+    const findFolderById = (folders: any[], id: string): any | undefined => 
+        folders.find(f => f._id === id);
+
+    const findFolderIdByName = (folders: any[], name: string): string | undefined => {
+        const folder = folders.find(f => f.name === name);
+        return folder?._id;
+    };
+
 
     // Merge containers (folders or requests) while preserving IDs and extra content
     const mergeContainers = (origContainers: any[], modContainers: any[]): any[] => {
@@ -57,12 +66,33 @@ function mergeSwaggerJSON(original: any, modified: any): any {
                     existingItem.colId = originalRootId;
                 }
             } else {
-                // Add new item (without modification)
-                result.push({ 
-                    ...modItem,
-                    ...(isRequest && { colId: originalRootId }) 
-                });            }
-        });
+                let finalContainerId = modItem.containerId;
+
+            // Handle container ID mapping for both requests and folders
+            if (modItem.containerId) {
+                // Find parent folder in modified JSON
+                const modifiedParentFolder = findFolderById(modified.folders || [], modItem.containerId);
+                if (modifiedParentFolder) {
+                    // Try to find matching folder in original JSON
+                    const originalFolderId = findFolderIdByName(original.folders || [], modifiedParentFolder.name);
+                    if (originalFolderId) {
+                        finalContainerId = originalFolderId;
+                    }
+                }
+            }
+
+            // Add new item with mapped container ID
+            result.push({
+                ...modItem,
+                ...(isRequest ? { 
+                    colId: originalRootId,
+                    containerId: finalContainerId 
+                } : {
+                    containerId: finalContainerId
+                })
+            });
+        }
+    });
 
         // Sort by sortNum after merging
         result.sort((a, b) => (a.sortNum || 0) - (b.sortNum || 0));

@@ -17,12 +17,14 @@ npx ts-node json-merger-final-typescript.ts
 *   **Deep Merging:** Nested objects within folders, requests, and other items are recursively merged.
 *   **Prefers Original Settings:** The `settings` object from the original specification is used in the merged output, discarding any settings from the Updated specification.
 *   **Handles Missing Properties:** Correctly handles cases where certain properties (e.g., `name`, `isPath`) might be `undefined` or `null` in either the original or Updated specification.
+*  **Request and folder Ids Linking:** finds names from ids and matches with original and links it. 
 *   **Preserves Extra Properties:** Any non-standard or extra properties present in the original specification are retained in the merged output.
 *   **Sorts Folders and Requests:** Folders and requests in the merged output are sorted based on their `sortNum` property.
 
 
+
 ## Need Fixing
-*  Assigning ids to the tags that are not present in the Original Json
+*  All Done......
 
 
 
