@@ -138,7 +138,6 @@ async function mergeSwaggerFiles(originalPath: string, modifiedPath: string, out
     }
 }
 
-// Example usage (make sure the files exist in the correct paths)
 const originalPath: string = 'Json/Original-petstore.json';
 const modifiedPath: string = 'Json/Updated-petstore.json';
 const outputPath: string = 'Json/Merged-petstore.json';
