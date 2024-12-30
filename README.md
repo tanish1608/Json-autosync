@@ -13,18 +13,5 @@ This tool merges two Swagger/OpenAPI specification JSON files, typically represe
 *   **Preserves Extra Properties:** Any non-standard or extra properties present in the original specification are retained in the merged output.
 *   **Sorts Folders and Requests:** Folders and requests in the merged output are sorted based on their `sortNum` property.
 
-## How it Works
 
-The merging process is driven by the `mergeSwaggerJSON` function, which performs the following key steps:
-
-1.  **Deep Merge:** It recursively merges the Updated JSON into the original JSON, handling different data types appropriately.
-2.  **Container Merging:** For `folders` and `requests` arrays, it iterates through the Updated items:
-    *   If an item with the same ID exists in the original, it merges the properties, preserving the original ID.
-    *   If the item is new (not found in the original), it's added directly to the merged output.
-3.  **Unique Item Concatenation:** For arrays like `params`, `headers`, and `body`, it concatenates unique items from the Updated JSON into the original. Uniqueness is determined by a combination of properties:
-    *   `name` and `isPath` (if present) for parameters.
-    *   `name` for headers.
-4.  **Conflict Resolution:** In general, during deep merging, if a property exists in both the original and Updated JSON, the value from the original is preferred (except for arrays, which are concatenated).
-5.  **Settings:** The `settings` object from the original JSON is used directly in the merged output.
-6.  **Sorting:** After merging, folders and requests are sorted based on their `sortNum` property to maintain a consistent order.
 
