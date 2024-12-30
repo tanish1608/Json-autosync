@@ -10,8 +10,8 @@ npx ts-node json-merger-final-typescript.ts
 
 ## Features
 
-*   **Preserves Original IDs:** Existing folders, requests, and other items in the original specification retain their original IDs in the merged output.
-*   **Preserves from Updated:** The Url, Body, Modified tags in Request are unmodified and put as is into merged output from Updated Json.
+*   **Preserves form Original Json:** Existing folders, requests, and other items in the original Json retain their original IDs, ColName, Created, SortNum, etc  in the merged output.
+*   **Preserves from Updated Josn:** The Url, Body, Modified tags in Request are unmodified and put as is into merged output from Updated Json.
 *   **Adds New Items:** New folders, requests, parameters, headers, etc., that are present in the Updated specification but not in the original are added to the merged output.
 *   **Concatenates Unique Items:** For arrays like `params`, `headers`, and `body`, the tool concatenates unique items from the Updated specification into the corresponding arrays in the original, preventing duplicates based on relevant properties (e.g., `name` and `isPath` for parameters).
 *   **Deep Merging:** Nested objects within folders, requests, and other items are recursively merged.
