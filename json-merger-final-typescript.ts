@@ -9,6 +9,8 @@ import path from 'path';
  */
 
 function mergeSwaggerJSON(original: any, modified: any): any {
+    const originalRootId = original._id;
+
     // Helper function to find an item by ID in an array
     const findById = (array: any[], name: string): any | undefined => array.find(item => item.name === name);
 
@@ -46,14 +48,20 @@ function mergeSwaggerJSON(original: any, modified: any): any {
 
         modContainers.forEach(modItem => {
             const existingItem = findById(result, modItem.name);
+            const isRequest = modItem.url !== undefined || modItem.method !== undefined;
 
             if (existingItem) {
                 // Merge existing item with modified item, preserving original IDs
                 Object.assign(existingItem, deepMerge(existingItem, modItem));
+                if (isRequest) {
+                    existingItem.colId = originalRootId;
+                }
             } else {
                 // Add new item (without modification)
-                result.push({ ...modItem });
-            }
+                result.push({ 
+                    ...modItem,
+                    ...(isRequest && { colId: originalRootId }) 
+                });            }
         });
 
         // Sort by sortNum after merging
