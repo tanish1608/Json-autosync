@@ -21,4 +21,8 @@ npx ts-node json-merger-final-typescript.ts
 *   **Sorts Folders and Requests:** Folders and requests in the merged output are sorted based on their `sortNum` property.
 
 
+## Need Fixing
+*  Assigning ids to the tags that are not present in the Original Json
+
+
 
