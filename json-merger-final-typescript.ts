@@ -1,5 +1,5 @@
-import fs from 'fs/promises';
-import path from 'path';
+import fs from "fs/promises";
+import path from "path";
 
 /**
  * Merges modified Swagger JSON content into original JSON while preserving extra content
@@ -9,140 +9,169 @@ import path from 'path';
  */
 
 function mergeSwaggerJSON(original: any, modified: any): any {
-    const originalRootId = original._id;
+  const originalRootId = original._id;
 
-    // Helper function to find an item by ID in an array
-    const findById = (array: any[], name: string): any | undefined => array.find(item => item.name === name);
+  // Helper function to find an item by ID in an array
+  const findByUrl = (array: any[], item: any): any | undefined => {
+    // For requests, match by URL + method combination
+    if (item.url !== undefined && item.method !== undefined) {
+      return array.find(
+        (arrayItem) =>
+          arrayItem.method === item.method && arrayItem.url === item.url
+      );
+    }
+    // For folders, match by name
+    return array.find((arrayItem) => arrayItem.name === item.name);
+  };
 
-    // Deep merge function for non-array objects
-    const deepMerge = (orig: any, mod: any): any => {
-        const result: any = { ...orig };
-    
-        // Check if this is a request object (has url or body)
-        const isRequest = 'url' in mod || 'body' in mod || 'modified' in mod;
-        
-        for (const key in mod) {
-            if (isRequest && (key === 'url' || key === 'body' || key === 'modified')) {
-                // Always use modified url and body for requests
-                result[key] = mod[key];
-            }
-            else if (Array.isArray(mod[key])) {
-                if (key === 'folders' || key === 'requests') {
-                    result[key] = mergeContainers(orig[key] || [], mod[key]);
-                } else {
-                    result[key] = concatenateUniqueItems(orig[key] || [], mod[key]);
-                }
-            } else if (typeof mod[key] === 'object' && mod[key] !== null) {
-                result[key] = deepMerge(orig[key] || {}, mod[key]);
-            } else {
-                result[key] = orig[key] !== undefined ? orig[key] : mod[key];
-            }
+  // Deep merge function for non-array objects
+  const deepMerge = (orig: any, mod: any): any => {
+    const result: any = { ...orig };
+
+    // Check if this is a request object (has url or body)
+    const isRequest = "url" in mod || "body" in mod || "modified" in mod;
+
+    for (const key in mod) {
+      if (
+        isRequest &&
+        (key === "url" || key === "body" || key === "modified")
+      ) {
+        // Always use modified url and body for requests
+        result[key] = mod[key];
+      } else if (Array.isArray(mod[key])) {
+        if (key === "folders" || key === "requests") {
+          result[key] = mergeContainers(orig[key] || [], mod[key]);
+        } else {
+          result[key] = concatenateUniqueItems(orig[key] || [], mod[key]);
         }
-    
-        return result;
-    };
-    // Add these helper functions
-    const findFolderById = (folders: any[], id: string): any | undefined => 
-        folders.find(f => f._id === id);
+      } else if (typeof mod[key] === "object" && mod[key] !== null) {
+        result[key] = deepMerge(orig[key] || {}, mod[key]);
+      } else {
+        result[key] = orig[key] !== undefined ? orig[key] : mod[key];
+      }
+    }
 
-    const findFolderIdByName = (folders: any[], name: string): string | undefined => {
-        const folder = folders.find(f => f.name === name);
-        return folder?._id;
-    };
+    return result;
+  };
 
+  // Add these helper functions
+  const findFolderById = (folders: any[], id: string): any | undefined =>
+    folders.find((f) => f._id === id);
 
-    // Merge containers (folders or requests) while preserving IDs and extra content
-    const mergeContainers = (origContainers: any[], modContainers: any[]): any[] => {
-        const result: any[] = [...origContainers];
+  const findFolderIdByName = (
+    folders: any[],
+    name: string
+  ): string | undefined => {
+    const folder = folders.find((f) => f.name === name);
+    return folder?._id;
+  };
 
-        modContainers.forEach(modItem => {
-            const existingItem = findById(result, modItem.name);
-            const isRequest = modItem.url !== undefined || modItem.method !== undefined;
+  // Merge containers (folders or requests) while preserving IDs and extra content
+  const mergeContainers = (
+    origContainers: any[],
+    modContainers: any[]
+  ): any[] => {
+    const result: any[] = [...origContainers];
 
-            if (existingItem) {
-                // Merge existing item with modified item, preserving original IDs
-                Object.assign(existingItem, deepMerge(existingItem, modItem));
-                if (isRequest) {
-                    existingItem.colId = originalRootId;
-                }
-            } else {
-                let finalContainerId = modItem.containerId;
+    modContainers.forEach((modItem) => {
+      const existingItem = findByUrl(result, modItem);
+      const isRequest =
+        modItem.url !== undefined || modItem.method !== undefined;
 
-            // Handle container ID mapping for both requests and folders
-            if (modItem.containerId) {
-                // Find parent folder in modified JSON
-                const modifiedParentFolder = findFolderById(modified.folders || [], modItem.containerId);
-                if (modifiedParentFolder) {
-                    // Try to find matching folder in original JSON
-                    const originalFolderId = findFolderIdByName(original.folders || [], modifiedParentFolder.name);
-                    if (originalFolderId) {
-                        finalContainerId = originalFolderId;
-                    }
-                }
-            }
-
-            // Add new item with mapped container ID
-            result.push({
-                ...modItem,
-                ...(isRequest ? { 
-                    colId: originalRootId,
-                    containerId: finalContainerId 
-                } : {
-                    containerId: finalContainerId
-                })
-            });
+      if (existingItem) {
+        // Merge existing item with modified item, preserving original IDs
+        Object.assign(existingItem, deepMerge(existingItem, modItem));
+        if (isRequest) {
+          existingItem.colId = originalRootId;
         }
+      } else {
+        let finalContainerId = modItem.containerId;
+
+        // Handle container ID mapping for both requests and folders
+        if (modItem.containerId) {
+          // Find parent folder in modified JSON
+          const modifiedParentFolder = findFolderById(
+            modified.folders || [],
+            modItem.containerId
+          );
+          if (modifiedParentFolder) {
+            // Try to find matching folder in original JSON
+            const originalFolderId = findFolderIdByName(
+              original.folders || [],
+              modifiedParentFolder.name
+            );
+            if (originalFolderId) {
+              finalContainerId = originalFolderId;
+            }
+          }
+        }
+
+        // Add new item with mapped container ID
+        result.push({
+          ...modItem,
+          ...(isRequest
+            ? {
+                colId: originalRootId,
+                containerId: finalContainerId,
+              }
+            : {
+                containerId: finalContainerId,
+              }),
+        });
+      }
     });
 
-        // Sort by sortNum after merging
-        result.sort((a, b) => (a.sortNum || 0) - (b.sortNum || 0));
+    // Sort by sortNum after merging
+    result.sort((a, b) => (a.sortNum || 0) - (b.sortNum || 0));
 
-        return result;
-    };
+    return result;
+  };
 
-    // Concatenate arrays by adding unique items based on a combination of properties
-    const concatenateUniqueItems = (origItems: any[], modItems: any[]): any[] => {
-        const result: any[] = [...origItems]; // Start with a copy of original items
+  // Concatenate arrays by adding unique items based on a combination of properties
+  const concatenateUniqueItems = (origItems: any[], modItems: any[]): any[] => {
+    const result: any[] = [...origItems]; // Start with a copy of original items
 
-        modItems.forEach(modItem => {
-            // Check if the modItem is unique compared to the current result array
-            const isUnique: boolean = !result.some(existingItem => areItemsEqual(modItem, existingItem));
+    modItems.forEach((modItem) => {
+      // Check if the modItem is unique compared to the current result array
+      const isUnique: boolean = !result.some((existingItem) =>
+        areItemsEqual(modItem, existingItem)
+      );
 
-            if (isUnique) {
-                result.push(modItem); // Add to the result if it's unique
-            }
-        });
+      if (isUnique) {
+        result.push(modItem); // Add to the result if it's unique
+      }
+    });
 
-        return result;
-    };
+    return result;
+  };
 
-    // Helper function to compare items for equality based on relevant properties
-    const areItemsEqual = (item1: any, item2: any): boolean => {
-        if (item1.name && item2.name && item1.name === item2.name) {
-            // For params, also check isPath
-            return item1.isPath === undefined || item1.isPath === item2.isPath;
-        } else {
-            // For other items (e.g., headers), just check the name
-            return item1.name && item2.name && item1.name === item2.name;
-        }
-    };
+  // Helper function to compare items for equality based on relevant properties
+  const areItemsEqual = (item1: any, item2: any): boolean => {
+    if (item1.name && item2.name && item1.name === item2.name) {
+      // For params, also check isPath
+      return item1.isPath === undefined || item1.isPath === item2.isPath;
+    } else {
+      // For other items (e.g., headers), just check the name
+      return item1.name && item2.name && item1.name === item2.name;
+    }
+  };
 
-    // Start the merge process
-    const merged: any = deepMerge(original, modified);
+  // Start the merge process
+  const merged: any = deepMerge(original, modified);
 
-    // Ensure important root properties are preserved
-    merged._id = original._id;
-    merged.colId = original.colId;
-    merged.containerId = original.containerId;
-    merged.colName = original.colName;
-    merged.created = original.created;
+  // Ensure important root properties are preserved
+  merged._id = original._id;
+  merged.colId = original.colId;
+  merged.containerId = original.containerId;
+  merged.colName = original.colName;
+  merged.created = original.created;
 
-    // Merge settings
-    merged.settings = {
-        ...original.settings,
-    };
+  // Merge settings
+  merged.settings = {
+    ...original.settings,
+  };
 
-    return merged;
+  return merged;
 }
 
 /**
@@ -151,41 +180,108 @@ function mergeSwaggerJSON(original: any, modified: any): any {
  * @param {string} modifiedPath - Path to modified JSON file
  * @param {string} outputPath - Path where merged JSON will be written
  */
-async function mergeSwaggerFiles(originalPath: string, modifiedPath: string, outputPath: string): Promise<void> {
-    try {
-        // Read both JSON files
-        const originalContent: string = await fs.readFile(originalPath, 'utf8');
-        const modifiedContent: string = await fs.readFile(modifiedPath, 'utf8');
+async function mergeSwaggerFiles(
+  originalPath: string,
+  modifiedPath: string,
+  outputPath: string
+): Promise<void> {
+  try {
+    // Read both JSON files
+    const originalContent: string = await fs.readFile(originalPath, "utf8");
+    const modifiedContent: string = await fs.readFile(modifiedPath, "utf8");
 
-        // Parse JSON content
-        const original: any = JSON.parse(originalContent);
-        const modified: any = JSON.parse(modifiedContent);
+    // Parse JSON content
+    const original: any = JSON.parse(originalContent);
+    const modified: any = JSON.parse(modifiedContent);
 
-        // Merge the JSONs
-        const merged: any = mergeSwaggerJSON(original, modified);
+    // Merge the JSONs
+    const merged: any = mergeSwaggerJSON(original, modified);
 
-        // Create output directory if it doesn't exist
-        const outputDir: string = path.dirname(outputPath);
-        await fs.mkdir(outputDir, { recursive: true });
+    // Delete Function
+    // const merged: any = deleteItemsFromOriginal(original, modified);
 
-        // Write merged content to new file with pretty formatting
-        await fs.writeFile(outputPath, JSON.stringify(merged, null, 4));
+    // Create output directory if it doesn't exist
+    const outputDir: string = path.dirname(outputPath);
+    await fs.mkdir(outputDir, { recursive: true });
 
-        console.log('Successfully merged JSON files!');
-        console.log('Output written to:', outputPath);
+    // Write merged content to new file with pretty formatting
+    await fs.writeFile(outputPath, JSON.stringify(merged, null, 4));
 
-    } catch (error) {
-        console.error('Error during file operations:', error);
-        throw error;
-    }
+    console.log("Successfully merged JSON files!");
+    console.log("Output written to:", outputPath);
+  } catch (error) {
+    console.error("Error during file operations:", error);
+    throw error;
+  }
 }
 
-const originalPath: string = 'Json/Original-petstore.json';
-const modifiedPath: string = 'Json/Updated-petstore.json';
-const outputPath: string = 'Json/Merged-petstore.json';
+const originalPath: string = "Json/Original-petstore.json";
+const modifiedPath: string = "Json/Updated-petstore.json";
+const outputPath: string = "Json/Merged-petstore.json";
 
-mergeSwaggerFiles(originalPath, modifiedPath, outputPath)
-    .catch(error => {
-        console.error('Failed to merge Swagger files:', error);
-        process.exit(1);
+mergeSwaggerFiles(originalPath, modifiedPath, outputPath).catch((error) => {
+  console.error("Failed to merge Swagger files:", error);
+  process.exit(1);
+});
+
+// Delete Function
+// Find items to delete by comparing original and modified JSON
+// Handle both requests and folders deletion
+// Check for nested folder structure
+// Remove items that exist in original but not in modified
+// Preserve folder hierarchy while deleting
+
+function deleteItemsFromOriginal(original: any, modified: any): any {
+  const result = { ...original };
+  const normalizeUrl = (url: string): string => {
+    return url.split("?")[0].replace(/\/+$/, "");
+  };
+  // Helper to check if item exists in modified JSON
+  const itemExistsInModified = (item: any, modifiedArray: any[]): boolean => {
+    if (item.url && item.method) {
+      // For requests, check URL and method
+      return modifiedArray.some(
+        (modItem) =>
+          modItem.method === item.method &&
+          normalizeUrl(modItem.url) === normalizeUrl(item.url)
+      );
+    }
+    // For folders, check name
+    return modifiedArray.some((modItem) => modItem.name === item.name);
+  };
+
+  // Process folders first to maintain hierarchy
+  if (result.folders) {
+    result.folders = result.folders.filter((folder: any) =>
+      itemExistsInModified(folder, modified.folders || [])
+    );
+  }
+
+  // Process requests
+  if (result.requests) {
+    result.requests = result.requests.filter((request: any) =>
+      itemExistsInModified(request, modified.requests || [])
+    );
+  }
+
+  // Handle nested folders recursively
+  const processNestedFolders = (folders: any[]): any[] => {
+    return folders.map((folder) => {
+      if (folder.folders) {
+        folder.folders = processNestedFolders(folder.folders);
+      }
+      if (folder.requests) {
+        folder.requests = folder.requests.filter((request: any) =>
+          itemExistsInModified(request, modified.requests || [])
+        );
+      }
+      return folder;
     });
+  };
+
+  if (result.folders) {
+    result.folders = processNestedFolders(result.folders);
+  }
+
+  return result;
+}

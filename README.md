@@ -24,7 +24,9 @@ npx ts-node json-merger-final-typescript.ts
 
 
 ## Need Fixing
-*  All Done......
+* Function to delete/remove items in original Json
+* streamline the code, and imrprove the style of code.
+
 
 
 

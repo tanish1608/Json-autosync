@@ -16,7 +16,27 @@
             "name": "findByStatus",
             "containerId": "520e4a25-b9f3-4a24-b86f-f6b1c8cc4711",
             "created": "2024-12-26T17:39:47.470Z",
-            "sortNum": 20000
+            "sortNum": 20000,
+            "settings": {
+                "headers": [
+                    {
+                        "name": "eherhe324234rh",
+                        "value": "erher234234herh"
+                    },
+                    {
+                        "name": "er324234herh",
+                        "value": "eh234234rehr"
+                    },
+                    {
+                        "name": "eherherh",
+                        "value": "erherherh"
+                    },
+                    {
+                        "name": "erherh",
+                        "value": "ehrehr"
+                    }
+                ]
+            }
         },
         {
             "_id": "f19ec5e3-b947-4e0f-afe1-dacc4fb31712",
@@ -204,7 +224,7 @@
             "colId": "f920ec6d-a222-4cef-af35-642e1a6362a7",
             "containerId": "de208fd9-6053-4083-8c11-adb9e331f84a",
             "name": "Finds Pets by status",
-            "url": "/pet/findByStdgdfgdfgdfgatus?status=available",
+            "url": "/pet/findByStatus?status=available",
             "method": "GET",
             "sortNum": 30000,
             "created": "2024-12-26T17:39:47.471Z",
@@ -603,8 +623,8 @@
             "_id": "3dd059d9-db6f-4235-a4a2-18f07dfe8f50",
             "colId": "f920ec6d-a222-4cef-af35-642e1a6362a7",
             "containerId": "6ed99061-62d6-4f1e-a6b7-d34b2b96f1c2",
-            "name": "Delete user",
-            "url": "/user/{username}",
+            "name": "Delete user O1",
+            "url": "/O1/{username}",
             "method": "DELETE",
             "sortNum": 190000,
             "created": "2024-12-26T17:39:47.487Z",
@@ -620,11 +640,11 @@
         },
         {
             "_id": "386c0efd-5321fwefwefwe-4cb3-95a7-ca047c671aab",
-            "colId": "f920ec6d-a222-4cef-af35-642e1a6362a7",
-            "containerId": "6ed99061-62d6-4f1e-a6b7-d34b2b96f1c2",
-            "name": "Deleteefwfwef user",
-            "url": "/usewefwefr/{username}",
-            "method": "DELETE",
+            "colId": "12e5fe93-44wefwe71-4ade-9bf5-be2e2b205bc1",
+            "containerId": "ec6ea2ac-0f70-491e-9bf4-a06e01999d89",
+            "name": "DeleteU1 user",
+            "url": "/O1/{username}",
+            "method": "PUT",
             "sortNum": 380000,
             "created": "2024-efwwefwe12-26T17:56:36.337Z",
             "modified": "2024-12-26fwefewf17:56:36.337Z",
@@ -641,9 +661,9 @@
             "_id": "386c0efd-5321fwefwefwe-4cb3-95a7-ca047c671aab",
             "colId": "f920ec6d-a222-4cef-af35-642e1a6362a7",
             "containerId": "eqwdea2ac-0f70-491ewef-9bf4-01999defw89",
-            "name": "Dele",
-            "url": "/usewefwefr/{username}",
-            "method": "DELETE",
+            "name": "DeleteU2",
+            "url": "/U2/{username}",
+            "method": "UPDATE",
             "sortNum": 380000,
             "created": "2024-efwwefwe12-26T17:56:36.337Z",
             "modified": "2024-12-26fwefewf17:56:36.337Z",
