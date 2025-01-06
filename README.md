@@ -4,7 +4,7 @@ This tool merges two Swagger/OpenAPI specification JSON files, typically represe
 
 To Run: 
 ```
-npx ts-node json-merger-final-typescript.ts          
+npx ts-node main.ts          
 
 ```
 
@@ -20,12 +20,12 @@ npx ts-node json-merger-final-typescript.ts
 *  **Request and folder Ids Linking:** finds names from ids and matches with original and links it. 
 *   **Preserves Extra Properties:** Any non-standard or extra properties present in the original specification are retained in the merged output.
 *   **Sorts Folders and Requests:** Folders and requests in the merged output are sorted based on their `sortNum` property.
+*  **Delete Function:** Remove items that exist in original but not in updated
 
 
 
 ## Need Fixing
-* Function to delete/remove items in original Json
-* streamline the code, and imrprove the style of code.
+* **All Done...**
 
 
 
